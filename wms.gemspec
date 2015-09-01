@@ -18,6 +18,12 @@ Gem::Specification.new do |s|
   s.test_files = Dir["test/**/*"]
 
   s.add_dependency "rails", "~> 4.2.3"
+  s.add_dependency "bcrypt", "~> 3.1.7"
+  s.add_dependency "sass-rails", "~> 5.0"
+  s.add_dependency 'coffee-rails', '~> 4.1.0'
+  s.add_dependency 'uglifier', '>= 1.3.0'
+  s.add_dependency "jquery-rails"
+  s.add_dependency "turbolinks"
 
   s.add_development_dependency "sqlite3"
 end
