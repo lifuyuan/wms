@@ -23,7 +23,7 @@ module Wms
 	      cookies.permanent[:token] = account.token
 	      redirect_to root_url
 	    else
-	      redirect_to "/wms/login"
+	      redirect_to login_path
 	    end
   	end
 
@@ -31,7 +31,7 @@ module Wms
 	    @account = Wms::Account.new(account_params)
 	    if @account.save
 	      cookies.permanent[:token] = @account.token
-	      redirect_to "/wms"
+	      redirect_to root_url
 	    else
 	      render :signup
 	    end

@@ -1,8 +1,6 @@
 <div class="header">
   <div class="container clearfix">
-    <a class="header-logo-wordmark" href="/wms">
-      WMS
-    </a>
+    <%= link_to "WMS", root_path, class: "header-logo-wordmark" %>
     <ul id="user-links">
       <% if current_account %>
         <li><%= link_to current_account.name, '#' %></li>
