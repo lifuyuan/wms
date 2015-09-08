@@ -1,11 +1,11 @@
 <div class="single-form-container">
   <div class="boxed-group" id="login">
-    <h3>登录</h3>
+    <h3>SIGN IN</h3>
     <div class="boxed-group-inner">
       <%= form_tag "/wms/create_login_session" do %>
         <dl class="form">
           <dt>
-         <%= label_tag "用户名" %>
+         <%= label_tag "name" %>
           </dt>
           <dd>
           <%= text_field_tag :name, params[:name] %>
@@ -13,13 +13,13 @@
         </dl>
         <dl class="form">
           <dt>
-          <%= label_tag "密码" %>
+          <%= label_tag "password" %>
           </dt>
           <dd>
           <%= password_field_tag :password, params[:password] %>
           </dd>
         </dl>
-        <p> <%= submit_tag "登录", :class => "button primary" %> </p>
+        <p> <%= submit_tag "sign in", :class => "button primary" %> </p>
       <% end %>
     </div>
   </div>

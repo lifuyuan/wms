@@ -2,6 +2,8 @@ require_dependency "wms/application_controller"
 
 module Wms
   class AccountsController < ApplicationController
+  	before_filter :check_login, only: [:welcome]
+
     def welcome
     end
 
@@ -14,15 +16,16 @@ module Wms
 
     def logout
     	cookies.delete(:token)
-    	redirect_to root_url
+    	redirect_to root_url, notice: "Signed out successfully."
   	end
 
   	def create_login_session
 	    account = Wms::Account.where(name: params[:name]).first
 	    if account && account.authenticate(params[:password])
 	      cookies.permanent[:token] = account.token
-	      redirect_to root_url
+	      redirect_to root_url, notice: "Signed in successfully."
 	    else
+	    	flash[:error] = "name or password not right"
 	      redirect_to login_path
 	    end
   	end
