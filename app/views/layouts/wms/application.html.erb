@@ -6,19 +6,22 @@
   <%= javascript_include_tag "wms/application" %>
   <%= csrf_meta_tags %>
 </head>
-<body>
-<%= render 'shared/header' %>
-<% if flash[:notice]%>
-<div class="flash-notice">
-  <%= flash[:notice] %>
-</div>
-<% end %>
-<% if flash[:error]%>
-<div class="flash-error">
-  <%= flash[:error] %>
-</div>
-<% end %>
-<%= yield %>
+<body class="english">
+  <div id="wrapper">
+    <% if current_account %>
+      <%= render "shared/header_logged_in" %>
+    <% else %>
+      <%= render "shared/header_logged_out" %>
+    <% end %>
+    <div class="flash-message">
+      <%= flash[:notice] %>
+    </div>
+
+    <%= content_for?(:content) ? yield(:content) : yield %>
+
+		<!-- Footer================================================== -->
+    <div id="footer-push"></div><!-- hack for sticky footer -->
+  </div><!-- end of wrapper - hack for sticky footer -->
 
 </body>
 </html>

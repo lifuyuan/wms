@@ -25,7 +25,7 @@ module Wms
 	      cookies.permanent[:token] = account.token
 	      redirect_to root_url, notice: "Signed in successfully."
 	    else
-	    	flash[:error] = "name or password not right"
+	    	flash[:notice] = "name or password not right"
 	      redirect_to login_path
 	    end
   	end

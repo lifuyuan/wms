@@ -1,0 +1,16 @@
+@import "wms/globals/variables";
+@import "wms/globals/mixins";
+
+.order-container {
+  width: 940px;
+  margin: 0 auto;
+  padding: 30px;
+}
+
+.order-title {
+  color: $custom-green;
+}
+
+.payment-form {
+  margin-top: 20px;
+}
