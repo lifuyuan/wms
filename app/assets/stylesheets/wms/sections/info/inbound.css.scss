@@ -1,33 +1,33 @@
 @import "wms/globals/variables";
 @import "wms/globals/mixins";
 
-.styleguide {
+.inbound {
   font-size: 14px;
-  .left-col, .styleguide-content {
+  .left-col, .inbound-content {
     margin-top: 20px;
   }
   .left-col {
     float: left;
     width: 200px;
   }
-  .styleguide-content {
+  .inbound-content {
     float: right;
     width: 80%;
   }
 }
 
-.styleguide-example {
+.inbound-example {
   margin: 15px auto;
   background: rgba(255, 255, 255, 0.5);
   border: 1px solid #DDD;
   box-shadow: 0 0 5px rgba(0, 0, 0, 0.1);
-  .styleguide-element {
+  .inbound-element {
     position: relative;
     padding: 20px;
     margin-top: -5px;
     padding-top: 40px;
     border-top: 1px solid #EEE;
-    .styleguide-modifier-name {
+    .inbound-modifier-name {
       display: block;
       position: absolute;
       top: 0;
@@ -40,7 +40,7 @@
       border-top: none;
     }
   }
-  .styleguide-element::after {
+  .inbound-element::after {
     display: block;
     content: '';
     clear: both;
@@ -65,8 +65,8 @@
   }
 }
 
-.styleguide-example {
-  .styleguide-html {
+.inbound-example {
+  .inbound-html {
     padding: 15px 15px;
     background: #EDF6F8;
     border-top: 1px solid #DDE7EA;
@@ -79,7 +79,7 @@
       }
     }
   }
-  .styleguide-description {
+  .inbound-description {
     padding: 1px 10px;
     background: #F1F1F1;
     border-bottom: 1px solid #DDD;
@@ -90,7 +90,7 @@
   }
 }
 
-.styleguide-color {
+.inbound-color {
   margin-bottom: 5px;
   padding: 30px;
   color: white;

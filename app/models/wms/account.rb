@@ -4,12 +4,18 @@ module Wms
     include Mongoid::Document
     include ActiveModel::SecurePassword
     before_create { generate_token }
+    before_create { assign_default_role }
+    before_save :ensure_android_token
 
     field :name, type: String
     field :email, type: String
     field :password_digest, type: String
     field :token, type: String
+    field :android_token, type: String
     field :state, type: Integer, default: 1
+
+    belongs_to :role, class_name: "Wms::Role"
+    belongs_to :depot, class_name: "Wms::Depot"
 
     has_secure_password
 
@@ -26,17 +32,29 @@ module Wms
       self[:token] = SecureRandom.urlsafe_base64
     end
 
+    def assign_default_role
+      self.role ||= Wms::Role.find_by(name: 'staff')
+    end
+
     def has_role?(role)
-      case role
-      when :admin then admin?
-      when :staff then state == STATE[:normal]
-      else false
+      self.role.name == role.to_s && state == STATE[:normal]
+    end
+
+    #token为空时自动生成新的token
+    def ensure_android_token
+      if android_token.blank?
+        self.android_token = generate_android_token
+      end
+    end
+   
+    private
+   
+    def generate_android_token
+      loop do
+        token = SecureRandom.urlsafe_base64
+        break token unless Wms::Account.where(android_token: token).first
       end
     end
 
-    # 是否是管理员
-    def admin?
-      Wms::Settings.admin_emails.include?(email)
-    end
   end
 end

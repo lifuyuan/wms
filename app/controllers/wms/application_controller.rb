@@ -13,6 +13,7 @@ module Wms
 	  end
 
 	  def check_login
+      session[:return_to] = request.original_url
     	redirect_to :login, :notice => "Must Sign in" if current_account.blank?
   	end
 

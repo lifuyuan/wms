@@ -1,0 +1,37 @@
+<% if @mer_inbound_commodities.count == 0 %>
+<% else %>
+  <table class="table table-bordered">
+    <thead>
+      <tr>
+        <th width="8%">tp_serial_id</th>
+        <th width="8%">inbound<br/>no</th>
+        <th width="10%">scheduled<br/>time</th>
+        <th width="8%">status</th>
+        <th width="8%">updated<br/>flag</th>
+        <th width="8%">inbound<br/>status</th>
+        <th width="8%">inbound<br/>depot</th>
+        <th width="9%">merchant</th>
+        <th width="12%">mer_email</th>
+        <th width="10%">commodity<br/>owner</th>
+        <th>memo</th>
+      </tr>
+    </thead>
+    <tbody>
+      <% @mer_inbound_commodities.each do |mic| %>
+        <tr>
+          <td><%=mic.tp_serial_id%></td>
+          <td><%=mic.inbound_no%></td>
+          <td><%=mic.scheduled_time.strftime("%Y-%m-%d")%></td>
+          <td><%=mic.status%></td>
+          <td><%=mic.updated_flag%></td>
+          <td><%=mic.inbound_status%></td>
+          <td><%=mic.inbound_depot%></td>
+          <td><%=mic.merchant.name%></td>
+          <td><%=mic.mer_email%></td>
+          <td><%=mic.commodity_owner%></td>
+          <td><%=mic.memo%></td>
+        </tr>
+      <% end %>
+    </tbody>
+  </table>
+<% end %>
