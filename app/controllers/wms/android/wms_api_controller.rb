@@ -51,8 +51,11 @@ module Wms
 	    	mbss = []
 	    	inbound_params = JSON.parse mdibc_params['inboundBarcode']
 	    	inbound_params.each do |barcode_params|
+	    		logger.info "params: #{barcode_params['commodityBarcode']} #{barcode_params['quantity']}"
 	    		commodityBarcode = barcode_params['commodityBarcode'].presence
 	    		quantity = (barcode_params['quantity'].presence || 1).to_i
+
+	    		logger.info "params: #{commodityBarcode} #{quantity}"
 	    		ms = commodityBarcode && Wms::MerSku.where(merchant: merchant, barcode: commodityBarcode).first
 	    		mbs = commodityBarcode && Wms::MerBatchSku.where(mer_inbound_commodity: mic, commodity_no: commodityBarcode).first
 	    		raise "Sku Info not exists" unless ms || mbs
