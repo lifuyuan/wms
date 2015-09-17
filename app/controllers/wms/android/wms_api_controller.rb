@@ -35,6 +35,7 @@ module Wms
 
 	  # 入库
 	  def inbound_commodity
+	  	begin
 				mdibc_params=params
 		  	merchantId = mdibc_params[:merchantId].presence
 	      merchant = merchantId && Merchant.where(id: merchantId.to_s).first
