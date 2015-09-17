@@ -49,7 +49,7 @@ module Wms
 	    	mis = []
 	    	mdibss = []
 	    	mbss = []
-	    	inbound_params = JSON.parse mdibc_params['inboundBarcode']
+	    	inbound_params = JSON.parse mdibc_params[:inboundBarcode]
 	    	inbound_params.each do |barcode_params|
 	    		logger.info "params: #{barcode_params['commodityBarcode']} #{barcode_params['quantity']}"
 	    		commodityBarcode = barcode_params['commodityBarcode'].presence
