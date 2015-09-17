@@ -7,6 +7,9 @@ Wms::Engine.routes.draw do
 
   namespace :android do
     post 'accounts/sign_in' => 'wms_api#sign_in'
+    get 'merchants' => 'wms_api#obtain_merchant'
+    get 'inbound_nos' => "wms_api#inquire_inbound_no"
+    post 'inbound' => "wms_api#inbound_commodity"
   end
   resources :accounts, only: [:create]
   resources :mer_inbound_commodities
