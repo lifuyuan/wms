@@ -36,10 +36,10 @@ module Wms
 	  # 入库
 	  def inbound_commodity
 				mdibc_params=params
-		  	merchantId = mdibc_params['merchantId'].presence
+		  	merchantId = mdibc_params[:merchantId].presence
 	      merchant = merchantId && Merchant.where(id: merchantId.to_s).first
 	      raise "Your request data is wrong" unless merchant
-	      inboundNo = mdibc_params['inboundNo'].presence
+	      inboundNo = mdibc_params[:inboundNo].presence
 	      mic = inboundNo && Wms::MerInboundCommodity.where(inbound_no: inboundNo.to_s).first
 	    	mdibc = Wms::MerDeoptInboundBatchCommodity.new(new_mdibc_params(mic))
 	    	mdibc.merchant = merchant
@@ -48,7 +48,8 @@ module Wms
 	    	mis = []
 	    	mdibss = []
 	    	mbss = []
-	    	(JSON.parse mdibc_params['inboundBarcode']).each do |barcode_params|
+	    	inbound_params = JSON.parse mdibc_params['inboundBarcode']
+	    	inbound_params.each do |barcode_params|
 	    		commodityBarcode = barcode_params['commodityBarcode'].presence
 	    		quantity = (barcode_params['quantity'].presence || 1).to_i
 	    		ms = commodityBarcode && Wms::MerSku.where(merchant: merchant, barcode: commodityBarcode).first
