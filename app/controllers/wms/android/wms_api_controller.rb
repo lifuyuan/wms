@@ -3,7 +3,7 @@ require_dependency "wms/application_controller"
 module Wms
   class Android::WmsApiController < ApplicationController
   	skip_before_filter :verify_authenticity_token
-  	before_filter :authenticate_user_from_android_token!,:except=>[:sign_in, :inbound_commodity]
+  	before_filter :authenticate_user_from_android_token!,:except=>[:sign_in]
 
     
     # 登录
@@ -35,16 +35,7 @@ module Wms
 
 	  # 入库
 	  def inbound_commodity
-	  	begin
-				request.body.rewind
-				mdibc_params=JSON.parse request.body.read
-			rescue=>e
 				mdibc_params=params
-			end
-			begin
-				token = mdibc_params["token"].presence
-      	@account = token && Wms::Account.where(android_token: token.to_s).first
-      	raise  "Your token has expired, please log in again" unless @account
 		  	merchantId = mdibc_params['merchantId'].presence
 	      merchant = merchantId && Merchant.where(id: merchantId.to_s).first
 	      raise "Your request data is wrong" unless merchant
@@ -57,7 +48,7 @@ module Wms
 	    	mis = []
 	    	mdibss = []
 	    	mbss = []
-	    	mdibc_params['inboundBarcode'].each do |barcode_params|
+	    	(JSON.parse mdibc_params['inboundBarcode']).each do |barcode_params|
 	    		commodityBarcode = barcode_params['commodityBarcode'].presence
 	    		quantity = (barcode_params['quantity'].presence || 1).to_i
 	    		ms = commodityBarcode && Wms::MerSku.where(merchant: merchant, barcode: commodityBarcode).first
@@ -112,6 +103,7 @@ module Wms
 	    	render json: {info: "successful"} 
 	    rescue=>e
 	    	info=e.message
+	    	logger.info "ERROR: #{info}"
 	    	mdibc.delete if mdibc
 	    	mdibss.each {|mdibs| mdibs.delete} if mdibss
 	    	mis.each {|mi| mi.delete} if mis
