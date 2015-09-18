@@ -75,21 +75,23 @@ module Wms
 	    	update_mbss = {}
 	    	i = 0
 	    	mbss.each do |mbs|
-	    		status = mbs.status
-	    		mdibcs = Wms::MerDeoptInboundBatchCommodity.where(merchant: mbs.mer_inbound_commodity.merchant, inbound_no: mbs.mer_inbound_commodity.inbound_no)
-	    		amount = 0
-	    		mdibcs.each do |mdibc|
-	    			amount += mdibc.mer_depot_inbound_batch_skus.sum{|m| m.quantity}
-	    		end
+	    		if mbs
+		    		status = mbs.status
+		    		mdibcs = Wms::MerDeoptInboundBatchCommodity.where(merchant: mbs.mer_inbound_commodity.merchant, inbound_no: mbs.mer_inbound_commodity.inbound_no)
+		    		amount = 0
+		    		mdibcs.each do |mdibc|
+		    			amount += mdibc.mer_depot_inbound_batch_skus.sum{|m| m.quantity}
+		    		end
 
-	    		if amount >= mbs.quantity
-	    			mbs.status = "entered"
-	    		else
-	    			mbs.status = "partial-entered"
-	    		end
+		    		if amount >= mbs.quantity
+		    			mbs.status = "entered"
+		    		else
+		    			mbs.status = "partial-entered"
+		    		end
 
-	    		raise "MerBatchSku Failed" unless mbs.save
-	    		update_mbss[mbs] = status
+		    		raise "MerBatchSku Failed" unless mbs.save
+		    		update_mbss[mbs] = status
+		    	end
 	    	end
 
 	    	# 更新mer_inbound_commodity
@@ -113,13 +115,18 @@ module Wms
 	    	mdibss.each {|mdibs| mdibs.delete} if mdibss
 	    	mis.each {|mi| mi.delete} if mis
 	    	if update_mbss
-	    		update_mbss.each {|key, value| key.update_attributes(status: value)}
+	    		update_mbss.each {|key, value| if key; key.update_attributes(status: value); end}
 	    	end
 	    	if mic_status
 	    		mic.update_attributes(inbound_status: mic_status) 
 	    	end
 	    	render json: {info: info}, status: "400"
 	    end
+	  end
+
+    # 上架
+	  def mount_commodity
+	  	
 	  end
 
 

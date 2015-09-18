@@ -10,6 +10,7 @@ Wms::Engine.routes.draw do
     get 'merchants' => 'wms_api#obtain_merchant'
     get 'inbound_nos' => "wms_api#inquire_inbound_no"
     post 'inbound' => "wms_api#inbound_commodity"
+    post 'mount' => "wms_api#mount_commodity"
   end
   resources :accounts, only: [:create]
   resources :mer_inbound_commodities
