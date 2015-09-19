@@ -1,0 +1,22 @@
+<% if @depot %>
+  <table class="table table-bordered">
+    <thead>
+      <tr>
+        <th width="15%">Depot Name</th>
+        <th width="15%">Depot Country</th>
+        <th width="20%">Shelf Number</th>
+        <th width="25%">Print Shelf Barcode</th>
+        <th width="20%">Edit Shelf Number</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><%=@depot.name%></td>
+        <td><%=@depot.country%></td>
+        <td><%=@depot.shelf_num%></td>
+        <td><%=link_to "Print Shelf Barcode", root_path%></td>
+        <td><%=link_to "Edit Shelf Number", edit_depot_path(@depot)%></td>
+      </tr>
+    </tbody>
+  </table>
+<% end %>

@@ -13,5 +13,7 @@ Wms::Engine.routes.draw do
     post 'mount' => "wms_api#mount_commodity"
   end
   resources :accounts, only: [:create]
+  resources :depots, only: [:edit, :update]
+  get "depots/show" => "depots#show_depot", :as => "show_depot"
   resources :mer_inbound_commodities
 end

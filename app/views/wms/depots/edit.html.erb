@@ -1,0 +1,17 @@
+
+<div class="boxed-group dangerzone">
+  <h3>Shelf Number Config</h3>
+  <div class="boxed-group-inner">
+    <%= form_for(@depot) do |f| %>
+      <dl class="form">
+        <dt>
+       		<%= label_tag "Number" %>
+        </dt>
+        <dd>
+        	<%= f.text_field :shelf_num, class: "short"  %>
+        </dd>
+      </dl>
+      <p> <%= f.submit :confirm, class: "button" %> </p>
+		<% end %>
+  </div>
+</div>

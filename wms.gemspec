@@ -27,6 +27,12 @@ Gem::Specification.new do |s|
   s.add_dependency "turbolinks"
   s.add_dependency "settingslogic", "~> 2.0.9"
   s.add_dependency "cancan", "~> 1.6.10"
+  s.add_dependency 'prawn', '~> 1.2.1'
+  s.add_dependency 'prawn-table', '~> 0.1.1'
+  s.add_dependency 'barby', '~> 0.5.1'
+  s.add_dependency 'rqrcode', '~> 0.4.2'
+  s.add_dependency 'rmagick', '~> 2.13.2'
+  s.add_dependency 'chunky_png', '~> 1.3.0'
 
   s.add_development_dependency "sqlite3"
 end
