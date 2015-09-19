@@ -29,8 +29,8 @@ module Wms
 
 	  # 获取预报批次号
 	  def inquire_inbound_no
-  		mic = Wms::MerInboundCommodity.where(inbound_depot: @account.depot.name, :status.in => ["accepted"], :inbound_status.in => ["partial-entered","non-enetered"])
-  		render json: {inbound_no: mic.map{|m| m.inbound_no}}
+  		mics = Wms::MerInboundCommodity.where(inbound_depot: @account.depot.name, :status.in => ["accepted"], :inbound_status.in => ["partial-entered","non-enetered"])
+  		render json: {inbound_no: mics.map{|m| m.inbound_no}}
 	  end
 
 	  # 入库
@@ -39,16 +39,19 @@ module Wms
 				mdibc_params=params
 		  	merchantId = mdibc_params[:merchantId].presence
 	      merchant = merchantId && Merchant.where(id: merchantId.to_s).first
-	      raise "Your request data is wrong" unless merchant
+	      raise "400" unless merchant
 	      inboundNo = mdibc_params[:inboundNo].presence
 	      mic = inboundNo && Wms::MerInboundCommodity.where(inbound_no: inboundNo.to_s).first
+	      if mic
+	      	raise "401" unless ["partial-entered","non-enetered"].include? mic.inbound_status
+	    	end
 	    	mdibc = Wms::MerDeoptInboundBatchCommodity.new(new_mdibc_params(mic))
 	    	mdibc.merchant = merchant
-	    	raise "MerDeoptInboundBatchCommodity Failed" unless mdibc.save
+	    	raise "402" unless mdibc.save
 	    	i = 0
 	    	mis = []
 	    	mdibss = []
-	    	mbss = []
+	    	update_mbss = {}
 	    	inbound_params = JSON.parse mdibc_params[:inboundBarcode]
 	    	inbound_params.each do |barcode_params|
 	    		logger.info "params: #{barcode_params['commodityBarcode']} #{barcode_params['quantity']}"
@@ -58,25 +61,18 @@ module Wms
 	    		logger.info "params: #{commodityBarcode} #{quantity}"
 	    		ms = commodityBarcode && Wms::MerSku.where(merchant: merchant, barcode: commodityBarcode).first
 	    		mbs = commodityBarcode && Wms::MerBatchSku.where(mer_inbound_commodity: mic, commodity_no: commodityBarcode).first
-	    		raise "Sku Info not exists" unless ms || mbs
+	    		raise "403" unless ms || mbs
 	    		mdibs = Wms::MerDepotInboundBatchSku.new(new_mdibs_params(ms, mbs, quantity))
 	    		mdibs.mer_depot_inbound_batch_commodity = mdibc
-	    		raise "MerDepotInboundBatchSku Failed" unless mdibs.save
+	    		raise "404" unless mdibs.save
 	    		mdibss[i] = mdibs
 	    		mi = Wms::MerInventory.new(new_mi_params(mdibs))
 	    		mi.merchant = merchant
-	    		raise "MerInventory Failed" unless mi.save
+	    		raise "405" unless mi.save
 	    		mis[i] = mi
-	    		mbss[i] = mbs
-					i+=1
-	    	end
-
-	    	# 更新mer_batch_sku
-	    	update_mbss = {}
-	    	i = 0
-	    	mbss.each do |mbs|
+	    		# 更新mer_batch_sku
 	    		if mbs
-		    		status = mbs.status
+		    		update_mbss[mbs] = mbs.status
 		    		mdibcs = Wms::MerDeoptInboundBatchCommodity.where(merchant: mbs.mer_inbound_commodity.merchant, inbound_no: mbs.mer_inbound_commodity.inbound_no)
 		    		amount = 0
 		    		mdibcs.each do |mdibc|
@@ -88,10 +84,9 @@ module Wms
 		    		else
 		    			mbs.status = "partial-entered"
 		    		end
-
-		    		raise "MerBatchSku Failed" unless mbs.save
-		    		update_mbss[mbs] = status
+		    		raise "406" unless mbs.save
 		    	end
+					i+=1
 	    	end
 
 	    	# 更新mer_inbound_commodity
@@ -104,17 +99,17 @@ module Wms
 	    			mic.inbound_status = "entered"
 	    		end
 
-	    		raise "MerInboundCommodity" unless mic.save
+	    		raise "407" unless mic.save
 	    	end
 
 	    	render json: {info: "successful"} 
 	    rescue=>e
 	    	info=e.message
 	    	logger.info "ERROR: #{info}"
-	    	mdibc.delete if mdibc
-	    	mdibss.each {|mdibs| mdibs.delete} if mdibss
-	    	mis.each {|mi| mi.delete} if mis
-	    	if update_mbss
+	    	mdibc.delete if mdibc.presence
+	    	mdibss.each {|mdibs| mdibs.delete} if mdibss.presence
+	    	mis.each {|mi| mi.delete} if mis.presence
+	    	if update_mbss.presence
 	    		update_mbss.each {|key, value| if key; key.update_attributes(status: value); end}
 	    	end
 	    	if mic_status
@@ -124,9 +119,71 @@ module Wms
 	    end
 	  end
 
+	  # 获取预报批次号
+	  def inquire_inbound_batch_no
+  		mdibcs = Wms::MerDeoptInboundBatchCommodity.where(inbound_depot: @account.depot.name)
+  		render json: {inbound_no: mdibcs.map{|m| m.inbound_batch_no}}
+	  end
+
     # 上架
 	  def mount_commodity
-	  	
+	  	begin
+	  		mdibc = Wms::MerDeoptInboundBatchCommodity.where(inbound_batch_no: params[:inboundBatchNo]).first
+	  		raise "400" unless mdibc
+	  		shelf_no = params[:shelfNum].presence
+	  		raise "401" unless shelf_no
+	  		logger.info params[:mountedBarcode]
+	  		mount_params = JSON.parse params[:mountedBarcode]
+	  		logger.info mount_params
+	  		raise "402" if mount_params.size == 0
+	  		i = 0
+	  		update_mdibss = {}
+	  		mmss = []
+	  		mmsls = []
+	  		mount_params.each do |mount_barcode|
+	  			commodityBarcode = mount_barcode['commodityBarcode'].presence
+	    		quantity = mount_barcode['quantity'].presence.to_i
+	    		logger.info commodityBarcode
+	  			mdibs = mdibc.mer_depot_inbound_batch_skus.where(commodity_no: commodityBarcode).first
+	  			raise "403" unless mdibs
+	  			update_mdibss[mdibs] = [mdibs.mounted_quantity, mdibs.status]
+	  			mdibs.mounted_quantity = mdibs.mounted_quantity + quantity
+	  			if mdibs.quantity <= mdibs.mounted_quantity
+	  				mdibs.status = "mounted"
+	  			else
+	  				mdibs.status = "partially-mounted"
+	  			end
+	  			raise "404" unless mdibs.save
+
+	  			mms = Wms::MerMountedSku.new(new_mms_params(mdibs, shelf_no))
+	  			raise "405" unless mms.save
+	  			mmss[i] = mms
+	  			mmsl = Wms::MerMountedSkuLog.new(new_mmsl_params(mdibs, shelf_no, "mount"))
+	  			raise "406" unless mmsl.save
+	  			mmsls[i] = mmsl
+	  			i += 1
+	  		end
+
+	  		render json: {info: "successful"} 
+	  	rescue=>e
+	  		info=e.message
+	    	logger.info "ERROR: #{info}"
+	  		if update_mdibss.presence
+		  		update_mdibss.each do |key, value|
+		  			key.update_attributes(mounted_quantity: value[0], status: value[1])
+		  		end
+	  	  end
+
+	  	  if mmss.presence
+	  	  	mmss.each {|m| m.delete}
+	  	  end
+
+	  	  if mmsls.presence
+	  	  	mmsls.each {|m| m.delete}
+	  	  end
+
+	  	  render json: {info: info}, status: info
+	  	end
 	  end
 
 
@@ -191,6 +248,33 @@ module Wms
 				mi['mer_email']=mdibs.mer_depot_inbound_batch_commodity.mer_email
 				mi['commodity_owner']=mdibs.mer_depot_inbound_batch_commodity.commodity_owner
 				mi
+			end
+
+			def new_mms_params(mdibs, shelf_no)
+				mms = {}
+				mms['sku_no'] = mdibs.sku_no
+				mms['sku_extra_no'] = mdibs.sku_extra_no
+				mms['commodity_no'] = mdibs.commodity_no
+				mms['inbound_batch_no'] = mdibs.mer_depot_inbound_batch_commodity.inbound_batch_no
+				mms['dom'] = mdibs.dom
+				mms['deadline_of_shelf_life'] = mdibs.deadline_of_shelf_life
+				mms['shelf_no'] = shelf_no
+				mms['operator'] = @account.name
+				mms['operator_id'] = @account.id.to_s
+				mms
+			end
+
+			def new_mmsl_params(mdibs, shelf_no, oper_type)
+				mmsl = {}
+				mmsl['sku_no'] = mdibs.sku_no
+				mmsl['sku_extra_no'] = mdibs.sku_extra_no
+				mmsl['commodity_no'] = mdibs.commodity_no
+				mmsl['inbound_batch_no'] = mdibs.mer_depot_inbound_batch_commodity.inbound_batch_no
+				mmsl['shelf_no'] = shelf_no
+				mmsl['operator'] = @account.name
+				mmsl['operator_id'] = @account.id.to_s
+				mmsl['oper_type'] = oper_type
+				mmsl
 			end
   end
 end

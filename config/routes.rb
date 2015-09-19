@@ -9,6 +9,7 @@ Wms::Engine.routes.draw do
     post 'accounts/sign_in' => 'wms_api#sign_in'
     get 'merchants' => 'wms_api#obtain_merchant'
     get 'inbound_nos' => "wms_api#inquire_inbound_no"
+    get 'inbound_batch_nos' => 'wms_api#inquire_inbound_batch_no'
     post 'inbound' => "wms_api#inbound_commodity"
     post 'mount' => "wms_api#mount_commodity"
   end
