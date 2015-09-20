@@ -186,7 +186,43 @@ module Wms
 	  	end
 	  end
 
-
+	  # 分拣
+	  def sorting_commodity
+	  	begin
+	  		mw = Wms::MerWave.where(wave_no: params[:waveNo]).first
+	  		raise "400" unless mw
+	  		mw_status = mw.status
+	  		sorting_params = JSON.parse params[:sortingBarcode]
+	  		raise "401" if sorting_params.size == 0
+	  		mwss = {}
+	  		sorting_params.each do |sorting_barcode|
+	  			commodityBarcode = sorting_barcode['commodityBarcode'].presence
+	    		quantity = sorting_barcode['quantity'].presence.to_i
+	    		mws = mw.mer_wave_skus.where(commodity_no: commodityBarcode).first
+	    		raise "402" unless mws
+	    		raise "403" if mws.allocated_quantity + quantity > mws.quantity
+	    		mwss[mws] = mws.allocated_quantity
+	    		mws.allocated_quantity = mws.allocated_quantity + quantity
+	    		raise "404" unless mws.save
+	  		end
+	  		isFinish = true
+	  		mw.mer_wave_skus.each {|mws| isFinish = false if mws.allocated_quantity < mws.quantity }
+	  		if isFinish
+	  			mw.status = "finished"
+	  			raise "405" unless mw.save
+	  		end
+	  		render json: {info: "successful"} 
+	  	rescue=>e
+				info=e.message
+				if mwss.presence
+					mwss.each {|key,value| key.update_attributes(allocated_quantity: value)}
+				end
+				if mw_status
+					mw.update_attributes(status: mw_status)
+				end
+				render json: {info: info}, status: info
+	  	end
+	  end
 
 
 

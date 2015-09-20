@@ -12,6 +12,8 @@ Wms::Engine.routes.draw do
     get 'inbound_batch_nos' => 'wms_api#inquire_inbound_batch_no'
     post 'inbound' => "wms_api#inbound_commodity"
     post 'mount' => "wms_api#mount_commodity"
+    post 'sorting' => "wms_api#sorting_commodity"
+    post 'unbound' => "wms_api#unbound_commodity"
   end
   resources :accounts, only: [:create]
   resources :depots, only: [:edit, :update]

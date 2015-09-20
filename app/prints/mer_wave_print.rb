@@ -23,9 +23,9 @@ class MerWavePrint < Prawn::Document
       #invoice_message.invoice_details.asc(:item).each {|i| data_detail << [i.item.to_i.to_s, i.description, i.qty, i.unit_price, i.vat, i.total]}
       mw.mer_wave_skus.each do |mws|
         if ms = Wms::MerSku.where(sku_no: mws.sku_no, merchant: mw.merchant).first
-          data_detail << [mws.quantity.to_s, ms.name.to_s, ms.chinese_name, ms.brand, ms.model, ms.color, ms.size, ms.grade]
+          data_detail << [(mws.quantity-mws.allocated_quantity.presence || 0).to_s, ms.name.to_s, ms.chinese_name, ms.brand, ms.model, ms.color, ms.size, ms.grade]
         else
-          data_detail << [mws.quantity.to_s, mws.sku_no.to_s, "", "", "", "", "", ""]
+          data_detail << [(mws.quantity-mws.allocated_quantity.presence || 0).to_s, mws.sku_no.to_s, "", "", "", "", "", ""]
         end
       end
       table data_detail, :width => 540, :column_widths => [30, 130, 90, 90, 50, 50, 50, 50], :cell_style => { :size => 11 } do 
