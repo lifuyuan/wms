@@ -43,7 +43,7 @@ module Wms
         session[:moo_id].each do |moo_id|
           @mer_outbound_order = Wms::MerOutboundOrder.find(moo_id)
           moos[@mer_outbound_order] = @mer_outbound_order.status
-          raise "MerOutboundOrder update failed!" unless @mer_outbound_order.update_attributes(status: "allocated")
+          raise "MerOutboundOrder update failed!" unless @mer_outbound_order.update_attributes(status: "allocated", outbound_method: "picking")
           mv = Wms::MerWave.new(wave_no: @mer_outbound_order.tp_order_no, 
             refered_amount: 1,
             allocator: current_account.name,
@@ -72,7 +72,7 @@ module Wms
         redirect_to mer_outbound_orders_path, notice: "allocate successful!"
       rescue=>e
         if moos.presence
-          moos.each {|key, value| key.update_attributes(status: value)}
+          moos.each {|key, value| key.update_attributes(status: value, outbound_method: nil)}
         end
         if mvs.presence
           mvs.each {|mv| mv.delete}
@@ -106,7 +106,7 @@ module Wms
         session[:moo_id].each do |moo_id|
           @mer_outbound_order = Wms::MerOutboundOrder.find(moo_id)
           moos[@mer_outbound_order] = @mer_outbound_order.status
-          raise "MerOutboundOrder update failed!" unless @mer_outbound_order.update_attributes(status: "allocated")
+          raise "MerOutboundOrder update failed!" unless @mer_outbound_order.update_attributes(status: "allocated", outbound_method: "seeding", wave_no: mv.wave_no)
           @mer_outbound_order.mer_batch_skus.each do |mbs|
             if mws = mv.mer_wave_skus.where(sku_no: mbs.sku_no).first
               mws.quantity = mws.quantity + mbs.quantity
@@ -129,11 +129,11 @@ module Wms
           end
         end
         session[:moo_id] = nil
-        redirect_to mer_outbound_orders_path, notice: "merge successful!"
+        redirect_to mer_outbound_orders_path, notice: "Seeding To a Wave successful!"
       rescue=>e
         mv.delete if mv.presence
         if moos.presence
-          moos.each {|key,value| key.update_attributes(status: "value")}
+          moos.each {|key,value| key.update_attributes(status: "value", outbound_method: nil, wave_no: nil)}
         end
 
         if wmss.presence

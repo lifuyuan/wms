@@ -105,6 +105,7 @@ module Wms
 	    	render json: {info: "successful"} 
 	    rescue=>e
 	    	info=e.message
+	    	info = "500" unless info.start_with?("4")
 	    	logger.info "ERROR: #{info}"
 	    	mdibc.delete if mdibc.presence
 	    	mdibss.each {|mdibs| mdibs.delete} if mdibss.presence
@@ -115,7 +116,7 @@ module Wms
 	    	if mic_status
 	    		mic.update_attributes(inbound_status: mic_status) 
 	    	end
-	    	render json: {info: info}, status: "400"
+	    	render json: {info: info}, status: info
 	    end
 	  end
 
@@ -167,6 +168,7 @@ module Wms
 	  		render json: {info: "successful"} 
 	  	rescue=>e
 	  		info=e.message
+	  		info = "500" unless info.start_with?("4")
 	    	logger.info "ERROR: #{info}"
 	  		if update_mdibss.presence
 		  		update_mdibss.each do |key, value|
@@ -214,6 +216,7 @@ module Wms
 	  		render json: {info: "successful"} 
 	  	rescue=>e
 				info=e.message
+				info = "500" unless info.start_with?("4")
 				if mwss.presence
 					mwss.each {|key,value| key.update_attributes(allocated_quantity: value)}
 				end
@@ -225,7 +228,56 @@ module Wms
 	  end
 
 
+	  def unbound_commodity
+	  	begin
+	  		moo = Wms::MerOutboundOrder.where(tp_order_no: params[:orderNo]).first
+	  		raise "400" unless moo
+	  		moo_status = moo.status
+	  		raise "401" unless moo.update_attributes(status: "gathered")
+	  		mdoo = Wms::MerDepotOutboundOrder.new(new_mdoo_params(moo))
+	  		mdoo.sender = moo.sender
+	  		mdoo.recipient = moo.recipient
+	  		raise "402" unless mdoo.save
+	  		outbound_params = JSON.parse params[:outboundBarcode]
+	  		raise "403" if outbound_params.size == 0
+	  		mis = {}
+	  		mdobss = []
+	  		i = 0
+	  		outbound_params.each do |outbound_barcode|
+	  			commodityBarcode = outbound_barcode['commodityBarcode'].presence
+	    		quantity = outbound_barcode['quantity'].presence.to_i
+	    		mbs = moo.mer_batch_skus.where(commodity_no: commodityBarcode).first
+	    		raise "404" unless mbs
+	    		mdobs = Wms::MerDepotOutboundBatchSku.new(new_mdobs_params(mbs, quantity))
+	    		mdobs.mer_depot_outbound_order = mdoo
+	    		raise "405" unless mdobs.save
+	    		mdobss[i] = mdobs
+	    		i += 1
+	    		Wms::MerInventory.where(merchant: moo.mer_outbound_commodity.merchant, commodity_no: commodityBarcode).asc(:created_at).each do |mi|
+	    			mis[mi] = mi.quantity
+	    			quantity = mi.quantity - quantity
+	    			mi.quantity = quantity >= 0 ? quantity : mi.quantity
+	    			raise "406" unless mi.save
+	    			break if quantity >= 0
+	    		end
+	    		raise "407" if quantity < 0
+	    	end
+	    	render json: {info: "successful"} 
+	  	rescue=>e
+	  		info = e.message
+	  		info = "500" unless info.start_with?("4")
+	  		moo.update_attributes(status: moo_status) if moo_status.presence
+	  		mdoo.delete if mdoo.presence
+	  		if mis.presence
+	  			mis.each {|key, value| key.update_attributes(quantity: value)}
+	  		end
 
+	  		if mdobss.presence
+	  			mdobss.each {|m| m.delete}
+	  		end
+	  		render json: {info: info}, status: info
+	  	end
+	  end
 
 
 
@@ -311,6 +363,43 @@ module Wms
 				mmsl['operator_id'] = @account.id.to_s
 				mmsl['oper_type'] = oper_type
 				mmsl
+			end
+
+			def new_mdoo_params(moo)
+				mdoo = {}
+				mdoo['order_no'] = moo.order_no
+				mdoo['outbound_no'] = moo.mer_outbound_commodity.outbound_no
+				mdoo['tp_order_no'] = moo.tp_order_no
+				mdoo['tp_order_datetime'] = moo.tp_order_datetime
+				mdoo['customer_id'] = moo.customer_id
+				mdoo['total_price'] = moo.total_price
+				mdoo['cp_price'] = moo.cp_price
+				mdoo['currency'] = moo.currency
+				mdoo['payor'] = moo.payor
+				mdoo['payment_method'] = moo.payment_method
+				mdoo['payment_datetime'] = moo.payment_datetime
+				mdoo['payment_price'] = moo.payment_price
+				mdoo['payment_currency'] = moo.payment_currency
+				mdoo['main_carrier'] = moo.main_carrier
+				mdoo['status'] = "gathered"
+				mdoo['outbound_method'] = moo.outbound_method
+				mdoo['wave_no'] = moo.wave_no
+				mdoo
+			end
+
+			def new_mdobs_params(mbs, gathered_quantity)
+				mdobs = {}
+				mdobs['depot_batch_sku_sid'] = mbs.batch_sku_sid
+				mdobs['sku_no'] = mbs.sku_no
+				mdobs['sku_extra_no'] = ''
+				mdobs['commodity_no'] = mbs.commodity_no
+				mdobs['quantity'] = mbs.quantity
+				mdobs['gathered_quantity'] = gathered_quantity
+				mdobs['oper_type'] = "addition"
+				mdobs['status'] = "gathered"
+				mdobs['operator'] = @account.name
+				mdobs['operator_id'] = @account.id.to_s
+				mdobs
 			end
   end
 end
