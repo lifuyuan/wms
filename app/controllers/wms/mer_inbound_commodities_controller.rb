@@ -7,7 +7,7 @@ module Wms
   	layout 'wms/inbound_layout'
 
     def index
-    	@mer_inbound_commodities = Wms::MerInboundCommodity.all
+    	@mer_inbound_commodities = Wms::MerInboundCommodity.where(inbound_depot: current_account.depot.name)
     end
 
     def show

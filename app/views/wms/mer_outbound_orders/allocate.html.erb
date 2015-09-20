@@ -1,0 +1,17 @@
+
+<div class="boxed-group dangerzone">
+  <h3>Single Order Allocate</h3>
+  <div class="boxed-group-inner">
+    <%= form_tag allocated_mer_outbound_orders_path do %>
+      <dl class="form">
+        <dt>
+          <%= label_tag "Allocate Orders To:" %>
+        </dt>
+        <dd>
+          <%=select_tag 'staff_id', options_for_select(Wms::Account.where(depot: current_account.depot).map{|a| [a.name, a.id]})%>
+        </dd>
+      </dl>
+      <p> <%= submit_tag "Submit", :class => "button" %> </p>
+    <% end %>
+  </div>
+</div>

@@ -7,9 +7,7 @@ module Wms
   	end
 
   	def check_admin
-	    unless current_account && current_account.has_role?(:admin)
-	      redirect_to :root, :notice => "Only admin can do this."
-	    end
+	    redirect_to :root, :notice => "Only admin can do this." unless current_account && current_account.has_role?(:admin)
 	  end
 
 	  def check_login

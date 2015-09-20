@@ -16,5 +16,13 @@ Wms::Engine.routes.draw do
   resources :accounts, only: [:create]
   resources :depots, only: [:edit, :update]
   get "depots/show" => "depots#show_depot", :as => "show_depot"
-  resources :mer_inbound_commodities
+  resources :mer_inbound_commodities, only: [:index, :show]
+
+  resources :mer_outbound_orders, only: [:index, :show] do
+    post 'choose', on: :collection
+    get 'allocate', on: :collection
+    post 'allocated', on: :collection
+    get 'merge', on: :collection
+    post 'merged', on: :collection
+  end
 end

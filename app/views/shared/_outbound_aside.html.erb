@@ -1,0 +1,6 @@
+<div class="menu-container">
+  <ul class="menu">
+    <li><a class="<%= request.path.start_with?('/wms/mer_outbound_orders')? "active":"" %>" href="/wms/mer_outbound_orders">Forecast Outbound</a></li>
+    <li><a class="<%= request.path.start_with?('/wms/depots')? "active":"" %>" href="/wms/depots/show">Depot Configuration</a></li>
+  </ul>
+</div>

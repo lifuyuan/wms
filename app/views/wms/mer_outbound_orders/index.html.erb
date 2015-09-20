@@ -1,0 +1,47 @@
+<% if @mer_outbound_commodities.count > 0 %>
+  <%= form_tag choose_mer_outbound_orders_path do %>
+    <table class="table table-bordered">
+      <thead>
+        <tr>
+          <th width="10%">tp order<br/>no</th>
+          <th width="10%">tp order<br/>datetime</th>
+          <th width="10%">scheduled<br/>time</th>
+          <th width="9%">merchant</th>
+          <th width="10%">commodity<br/>owner</th>
+          <th width="10%">status</th>
+          <th width="10%">memo</th>
+          <th width="15%">
+            <%= radio_button 'choose', 'way', "allocate", checked: false %>single allocate<br/>
+            <%= radio_button 'choose', 'way', "merge", checked: false %>merge to a wave
+          </th>
+        </tr>
+      </thead>
+      <tbody>
+        <% @mer_outbound_commodities.each do |moc| %>
+          <% moc.mer_outbound_orders.each do |moo| %>
+            <tr>
+              <td><%=moo.tp_order_no%></td>
+              <td><%=moo.tp_order_datetime.strftime("%Y-%m-%d") if moo.tp_order_datetime%></td>
+              <td><%=moc.scheduled_time.strftime("%Y-%m-%d") if moc.scheduled_time%></td>
+              <td><%=moc.merchant.name%></td>
+              <td><%=moc.commodity_owner%></td>
+              <td><%=moo.status%></td>
+              <td><%=moc.memo%></td>
+              <td>
+                <% if moo.status == "non-gathered"%>
+                  <%= check_box_tag 'moo_id[]', moo.id %>
+                <% end %>
+              </td>
+            </tr>
+          <% end %>
+        <% end %>
+        <tr>
+          <td colspan="7"></td>
+          <td style="text-align: right;">
+            <%= submit_tag "Submit", :class => "button"%>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  <% end %>
+<% end %>
