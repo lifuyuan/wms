@@ -14,3 +14,16 @@
 //= require jquery
 //= require jquery_ujs
 //= require turbolinks
+
+
+function checkAll(object)
+{
+   var order_id = document.getElementsByName("mw_id[]");
+   var length = order_id.length;
+   var checked = object.checked;
+   //alert(checked)
+   for (var i = 0; i < length; i++)
+   {
+     order_id[i].checked=checked;
+   }
+}

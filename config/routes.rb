@@ -25,4 +25,9 @@ Wms::Engine.routes.draw do
     get 'merge', on: :collection
     post 'merged', on: :collection
   end
+
+  resources :mer_waves, only: [:index] do 
+    post 'sorting_pdf', on: :collection
+    get 'order_pdf', on: :member
+  end
 end

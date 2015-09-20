@@ -3,7 +3,7 @@ require_dependency "wms/application_controller"
 module Wms
   class MerOutboundOrdersController < ApplicationController
   	before_filter :check_login
-    #before_filter :check_admin
+    before_filter :check_admin, except: [:index, :show]
   	
   	layout 'wms/outbound_layout'
 
@@ -15,12 +15,16 @@ module Wms
     end
 
     def choose
-      redirect_to mer_outbound_orders_path, notice: "You must select at least two orders" and return unless params[:moo_id].presence
+      redirect_to mer_outbound_orders_path, notice: "You must select at least one orders" and return unless params[:moo_id].presence
       redirect_to mer_outbound_orders_path, notice: "You must select operation type" and return unless params[:choose].presence
       session[:moo_id] = params[:moo_id]
       if params[:choose][:way] == "allocate"
         render action: "allocate"
       elsif params[:choose][:way] == "merge"
+        if params[:moo_id].size <= 1
+          session[:moo_id] = nil
+          redirect_to mer_outbound_orders_path, notice: "You must select at least two orders" and return
+        end
         render action: "merge"
       end
     end
@@ -107,7 +111,7 @@ module Wms
             if mws = mv.mer_wave_skus.where(sku_no: mbs.sku_no).first
               mws.quantity = mws.quantity + mbs.quantity
               mws.allocated_orders << @mer_outbound_order.id
-              mws.allocated_orders << @mer_outbound_order.id
+              mws.refered_orders << @mer_outbound_order.id
               raise "MerWaveSku update failed!" unless mws.save
             else
               mooa = [@mer_outbound_order.id]
