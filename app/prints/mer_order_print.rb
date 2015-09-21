@@ -28,7 +28,7 @@ class MerOrderPrint < Prawn::Document
           data_detail << [mbs.quantity.to_s, mbs.sku_no.to_s, "", "", "", "", ""]
         end
       end
-      table data_detail, :column_widths => [30, 150, 110, 60, 60, 60, 60], :cell_style => { :size => 11 } do 
+      table data_detail, :column_widths => [40, 150, 110, 60, 60, 60, 60], :cell_style => { :size => 11 } do 
         cells.padding = 2
         cells.borders = [:top,:bottom, :right, :left]
       end

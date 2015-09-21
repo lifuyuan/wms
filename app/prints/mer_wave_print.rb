@@ -25,10 +25,10 @@ class MerWavePrint < Prawn::Document
         if ms = Wms::MerSku.where(sku_no: mws.sku_no, merchant: mw.merchant).first
           data_detail << [(mws.quantity-mws.allocated_quantity.presence || 0).to_s, ms.name || "", ms.brand || "", ms.model || "", ms.color || "", ms.size || "", ms.grade || ""]
         else
-          data_detail << [(mws.quantity-mws.allocated_quantity.presence || 0).to_s, mws.sku_no.to_s, "", "", "", "", "", ""]
+          data_detail << [(mws.quantity-mws.allocated_quantity.presence || 0).to_s, mws.sku_no.to_s, "", "", "", "", ""]
         end
       end
-      table data_detail, :column_widths => [30, 150, 110, 60, 60, 60, 60], :cell_style => { :size => 11 } do 
+      table data_detail, :column_widths => [40, 150, 110, 60, 60, 60, 60], :cell_style => { :size => 11 } do 
         cells.padding = 2
         cells.borders = [:top,:bottom, :right, :left]
       end
