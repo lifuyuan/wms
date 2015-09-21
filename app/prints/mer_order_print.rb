@@ -14,7 +14,7 @@ class MerOrderPrint < Prawn::Document
       text "Order No.:  #{order.tp_order_no}", size: 14 
       move_down 5
       text "Order No. Barcode:", size: 14
-      image file_path, width: 150, height: 80, align: :center
+      image file_path, width: 250, height: 100, align: :center
       move_down 5
       
     end
@@ -23,7 +23,7 @@ class MerOrderPrint < Prawn::Document
       #invoice_message.invoice_details.asc(:item).each {|i| data_detail << [i.item.to_i.to_s, i.description, i.qty, i.unit_price, i.vat, i.total]}
       order.mer_batch_skus.each do |mbs|
         if ms = Wms::MerSku.where(sku_no: mbs.sku_no, merchant: order.mer_outbound_commodity.merchant).first
-          data_detail << [mbs.quantity.to_s, ms.name.to_s, ms.chinese_name, ms.brand, ms.model, ms.color, ms.size, ms.grade]
+          data_detail << [mbs.quantity.to_s, ms.name || "", ms.chinese_name || "", ms.brand || "", ms.model || "", ms.color || "", ms.size || "", ms.grade || ""]
         else
           data_detail << [mbs.quantity.to_s, mbs.sku_no.to_s, "", "", "", "", "", ""]
         end

@@ -18,6 +18,12 @@ module Wms
   		redirect_to show_depot_path, notice: "Edit Successful"
   	end
 
+    def shelf_barcode
+      @depot = current_account.depot
+      output = ShelfNumPrint.new.shelf_num_pdf(@depot.shelf_num || 0)
+      send_data output, :type => "application/pdf", :filename => "ShelfBarcode.pdf", :disposition => "attachment", :encoding => 'gb2312'
+    end
+
 
   	private
 	  	def depot_params

@@ -14,7 +14,7 @@ class MerWavePrint < Prawn::Document
       text mw.wave_no.start_with?('wave') ? "Wave No.:  #{mw.wave_no}" : "Order No.:  #{mw.wave_no}", size: 14 
       move_down 5
       text mw.wave_no.start_with?('wave') ? "Wave No. Barcode:" : "Order No. Barcode:", size: 14
-      image file_path, width: 150, height: 80, align: :center
+      image file_path, width: 250, height: 100, align: :center
       move_down 5
       
     end
@@ -23,7 +23,7 @@ class MerWavePrint < Prawn::Document
       #invoice_message.invoice_details.asc(:item).each {|i| data_detail << [i.item.to_i.to_s, i.description, i.qty, i.unit_price, i.vat, i.total]}
       mw.mer_wave_skus.each do |mws|
         if ms = Wms::MerSku.where(sku_no: mws.sku_no, merchant: mw.merchant).first
-          data_detail << [(mws.quantity-mws.allocated_quantity.presence || 0).to_s, ms.name.to_s, ms.chinese_name, ms.brand, ms.model, ms.color, ms.size, ms.grade]
+          data_detail << [(mws.quantity-mws.allocated_quantity.presence || 0).to_s, ms.name || "", ms.chinese_name || "", ms.brand || "", ms.model || "", ms.color || "", ms.size || "", ms.grade || ""]
         else
           data_detail << [(mws.quantity-mws.allocated_quantity.presence || 0).to_s, mws.sku_no.to_s, "", "", "", "", "", ""]
         end
