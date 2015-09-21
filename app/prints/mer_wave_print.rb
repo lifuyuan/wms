@@ -19,16 +19,16 @@ class MerWavePrint < Prawn::Document
       
     end
     font("#{Wms::Engine.root}/lib/fonts/simhei.ttf") do
-      data_detail = [["Qty","Name", "Chinese Name", "Brand", "Model", "Color", "Size", "Grade"]]
+      data_detail = [["Qty","Name", "Brand", "Model", "Color", "Size", "Grade"]]
       #invoice_message.invoice_details.asc(:item).each {|i| data_detail << [i.item.to_i.to_s, i.description, i.qty, i.unit_price, i.vat, i.total]}
       mw.mer_wave_skus.each do |mws|
         if ms = Wms::MerSku.where(sku_no: mws.sku_no, merchant: mw.merchant).first
-          data_detail << [(mws.quantity-mws.allocated_quantity.presence || 0).to_s, ms.name || "", ms.chinese_name || "", ms.brand || "", ms.model || "", ms.color || "", ms.size || "", ms.grade || ""]
+          data_detail << [(mws.quantity-mws.allocated_quantity.presence || 0).to_s, ms.name || "", ms.brand || "", ms.model || "", ms.color || "", ms.size || "", ms.grade || ""]
         else
           data_detail << [(mws.quantity-mws.allocated_quantity.presence || 0).to_s, mws.sku_no.to_s, "", "", "", "", "", ""]
         end
       end
-      table data_detail, :width => 540, :column_widths => [30, 130, 90, 90, 50, 50, 50, 50], :cell_style => { :size => 11 } do 
+      table data_detail, :column_widths => [30, 150, 110, 60, 60, 60, 60], :cell_style => { :size => 11 } do 
         cells.padding = 2
         cells.borders = [:top,:bottom, :right, :left]
       end
