@@ -11,7 +11,7 @@ module Wms
 	    account = Wms::Account.where(name: params[:name]).first
 	    if account && account.authenticate(params[:password])
 	    	account.ensure_android_token
-	    	render json: {token: account.android_token}
+	    	render json: {token: account.android_token, role: account.role.name, depot: account.depot.name}
 	    else
 	    	render json: {info: "name or password not right"}, status: "404"
 	    end
