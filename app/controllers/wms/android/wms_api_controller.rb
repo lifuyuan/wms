@@ -29,12 +29,12 @@ module Wms
 
 	  # 获取预报批次号
 	  def inquire_inbound_no
-  		mics = Wms::MerInboundCommodity.where(inbound_depot: @account.depot.name, :status.in => ["accepted"], :inbound_status.in => ["partial-entered","non-enetered"])
+  		mics = Wms::MerInboundCommodity.where(inbound_depot: @account.depot.name, :status.in => ["accepted"], :inbound_status.in => ["partial-entered","non-entered"])
   		render json: {inbound_no: mics.map{|m| m.inbound_no}}
 	  end
 
-	  # 入库
-	  def inbound_commodity
+	  # 批量入库
+	  def inbound_commodity_batch
 	  	begin
 				mdibc_params=params
 		  	merchantId = mdibc_params[:merchantId].presence
@@ -43,7 +43,7 @@ module Wms
 	      inboundNo = mdibc_params[:inboundNo].presence
 	      mic = inboundNo && Wms::MerInboundCommodity.where(inbound_no: inboundNo.to_s).first
 	      if mic
-	      	raise "401" unless ["partial-entered","non-enetered"].include? mic.inbound_status
+	      	raise "401" unless ["partial-entered","non-entered"].include? mic.inbound_status
 	    	end
 	    	mdibc = Wms::MerDeoptInboundBatchCommodity.new(new_mdibc_params(mic))
 	    	mdibc.merchant = merchant
@@ -120,14 +120,120 @@ module Wms
 	    end
 	  end
 
+	  # 单个入库
+	  def inbound_commodity
+	  	begin
+				mdibc_params=params
+		  	merchantId = mdibc_params[:merchantId].presence
+	      merchant = merchantId && Merchant.where(id: merchantId.to_s).first
+	      raise "400" unless merchant
+	      inboundNo = mdibc_params[:inboundNo].presence
+	      mic = Wms::MerInboundCommodity.where(inbound_no: inboundNo.to_s).first
+	      raise "408" unless mic
+	      raise "401" unless ["partial-entered", "non-entered"].include? mic.inbound_status
+	    	unless mdibc_e = Wms::MerDeoptInboundBatchCommodity.where(inbound_no: inboundNo).first
+	    		mdibc = Wms::MerDeoptInboundBatchCommodity.new(new_mdibc_params(mic))
+	    		mdibc.merchant = merchant
+	    		raise "402" unless mdibc.save
+	    		mdibc_e = mdibc
+	    	end
+
+    		commodityBarcode = mdibc_params[:commodityBarcode].presence
+    		quantity = (mdibc_params[:quantity].presence || 1).to_i
+
+    		logger.info "params: #{commodityBarcode} #{quantity}"
+    		ms = commodityBarcode && Wms::MerSku.where(merchant: merchant, barcode: commodityBarcode).first
+    		mbs = commodityBarcode && Wms::MerBatchSku.where(mer_inbound_commodity: mic, commodity_no: commodityBarcode).first
+    		raise "403" unless ms || mbs
+    		unless mdibs_e = Wms::MerDepotInboundBatchSku.where(mer_depot_inbound_batch_commodity: mdibc_e, commodity_no: commodityBarcode).first
+	    		mdibs = Wms::MerDepotInboundBatchSku.new(new_mdibs_params(ms, mbs, quantity))
+	    		mdibs.mer_depot_inbound_batch_commodity = mdibc_e
+	    		raise "404" unless mdibs.save
+	    		mdibs_e = mdibs
+	    	else
+	    		mdibs_e.quantity = mdibs_e.quantity + 1
+	    		raise "409" unless mdibs_e.save
+    		end
+    		unless mi_e = Wms::MerInventory.where(depot_batch_sku_sid: mdibs_e.depot_batch_sku_sid, commodity_no: commodityBarcode).first
+	    		mi = Wms::MerInventory.new(new_mi_params(mdibs_e))
+	    		mi.merchant = merchant
+	    		raise "405" unless mi.save
+	    		mi_e = mi
+	    	else
+	    		mi_e.quantity = mi_e.quantity + 1
+	    		mi_e.availiable_quantity = mi_e.availiable_quantity + 1
+	    		raise "410" unless mi_e.save
+	    	end
+    		# 更新mer_batch_sku
+    		update_mbss = {}
+    		if mbs
+	    		update_mbss[mbs] = mbs.status
+	    		mdibcs = Wms::MerDeoptInboundBatchCommodity.where(merchant: mbs.mer_inbound_commodity.merchant, inbound_no: mbs.mer_inbound_commodity.inbound_no)
+	    		amount = 0
+	    		mdibcs.each do |mdibc|
+	    			amount += mdibc.mer_depot_inbound_batch_skus.sum{|m| m.quantity}
+	    		end
+
+	    		if amount >= mbs.quantity
+	    			mbs.status = "entered"
+	    		else
+	    			mbs.status = "partial-entered"
+	    		end
+	    		raise "406" unless mbs.save
+	    	end
+
+	    	# 更新mer_inbound_commodity
+    		mic_status = mic.inbound_status
+
+    		if mic.mer_batch_skus.where(:status.in => ["partial-entered","non-entered"]).first
+    			mic.inbound_status = "partial-entered"
+    		else
+    			mic.inbound_status = "entered"
+    		end
+
+    		raise "407" unless mic.save
+
+	    	render json: {info: "successful"} 
+	    rescue=>e
+	    	info=e.message
+	    	info = "500" unless info.start_with?("4")
+	    	logger.info "ERROR: #{info}"
+	    	mdibc.delete if mdibc.presence
+	    	if mdibs
+	    		mdibs.delete
+	    	else
+	    		if mdibs_e
+	    			mdibs_e.quantity = mdibs_e.quantity - 1
+	    			mdibs_e.save
+	    		end
+	    	end
+	    	if mi
+	    		mi.delete
+	    	else
+	    		if mi_e
+		    		mi_e.quantity = mi_e.quantity - 1
+		    		mi_e.availiable_quantity = mi_e.availiable_quantity - 1
+		    		mi_e.save
+		    	end
+	    	end
+	    	if update_mbss.presence
+	    		update_mbss.each {|key, value| if key; key.update_attributes(status: value); end}
+	    	end
+	    	if mic_status
+	    		mic.update_attributes(inbound_status: mic_status) 
+	    	end
+	    	render json: {info: info}, status: info
+	    end
+	  end
+
 	  # 获取预报批次号
 	  def inquire_inbound_batch_no
   		mdibcs = Wms::MerDeoptInboundBatchCommodity.where(inbound_depot: @account.depot.name)
   		render json: {inbound_no: mdibcs.map{|m| m.inbound_batch_no}}
 	  end
 
-    # 上架
-	  def mount_commodity
+    # 批量上架
+	  def mount_commodity_batch
 	  	begin
 	  		mdibc = Wms::MerDeoptInboundBatchCommodity.where(inbound_batch_no: params[:inboundBatchNo]).first
 	  		raise "400" unless mdibc
@@ -188,8 +294,56 @@ module Wms
 	  	end
 	  end
 
-	  # 分拣
-	  def sorting_commodity
+    # 单个上架
+	  def mount_commodity
+	  	begin
+	  		mdibc = Wms::MerDeoptInboundBatchCommodity.where(inbound_batch_no: params[:inboundBatchNo]).first
+	  		raise "400" unless mdibc
+	  		shelf_no = params[:shelfNum].presence
+	  		raise "401" unless shelf_no
+	  		update_mdibss = {}
+  			commodityBarcode = params[:commodityBarcode].presence
+    		quantity = (params[:quantity].presence || "1").to_i
+    		logger.info commodityBarcode
+  			mdibs = mdibc.mer_depot_inbound_batch_skus.where(commodity_no: commodityBarcode).first
+  			raise "403" unless mdibs
+  			update_mdibss[mdibs] = [mdibs.mounted_quantity, mdibs.status]
+  			mdibs.mounted_quantity = mdibs.mounted_quantity + quantity
+  			if mdibs.quantity <= mdibs.mounted_quantity
+  				mdibs.status = "mounted"
+  			else
+  				mdibs.status = "partially-mounted"
+  			end
+  			raise "404" unless mdibs.save
+  			unless mms_e = Wms::MerMountedSku.where(inbound_batch_no: mdibs.mer_depot_inbound_batch_commodity.inbound_batch_no, commodity_no: commodityBarcode).first
+  				mms = Wms::MerMountedSku.new(new_mms_params(mdibs, shelf_no))
+  				raise "405" unless mms.save
+  			end
+  			unless mmsl_e = Wms::MerMountedSkuLog.where(inbound_batch_no: mdibs.mer_depot_inbound_batch_commodity.inbound_batch_no, commodity_no: commodityBarcode).first
+	  			mmsl = Wms::MerMountedSkuLog.new(new_mmsl_params(mdibs, shelf_no, "mount"))
+	  			raise "406" unless mmsl.save
+  			end
+	  		render json: {info: "successful"} 
+	  	rescue=>e
+	  		info=e.message
+	  		info = "500" unless info.start_with?("4")
+	    	logger.info "ERROR: #{info}"
+	  		if update_mdibss.presence
+		  		update_mdibss.each do |key, value|
+		  			key.update_attributes(mounted_quantity: value[0], status: value[1])
+		  		end
+	  	  end
+
+	  	  mms.delete if mms.presence
+
+	  	  mmsl.delete if mmsl.presence
+
+	  	  render json: {info: info}, status: info
+	  	end
+	  end
+
+	  # 批量分拣
+	  def sorting_commodity_batch
 	  	begin
 	  		mw = Wms::MerWave.where(wave_no: params[:waveNo]).first
 	  		raise "400" unless mw
@@ -219,6 +373,42 @@ module Wms
 				info = "500" unless info.start_with?("4")
 				if mwss.presence
 					mwss.each {|key,value| key.update_attributes(allocated_quantity: value)}
+				end
+				if mw_status
+					mw.update_attributes(status: mw_status)
+				end
+				render json: {info: info}, status: info
+	  	end
+	  end
+
+	  # 单个分拣
+	  def sorting_commodity
+	  	begin
+	  		mw = Wms::MerWave.where(wave_no: params[:waveNo]).first
+	  		raise "400" unless mw
+	  		mw_status = mw.status
+
+  			commodityBarcode = params[:commodityBarcode].presence
+    		quantity = (params[:quantity].presence || "1").to_i
+    		mws = mw.mer_wave_skus.where(commodity_no: commodityBarcode).first
+    		raise "402" unless mws
+    		raise "403" if mws.allocated_quantity + quantity > mws.quantity
+    		mws.allocated_quantity = mws.allocated_quantity + quantity
+    		raise "404" unless mws.save
+
+	  		isFinish = true
+	  		mw.mer_wave_skus.each {|mws| isFinish = false if mws.allocated_quantity < mws.quantity }
+	  		if isFinish
+	  			mw.status = "finished"
+	  			raise "405" unless mw.save
+	  		end
+	  		render json: {info: "successful"} 
+	  	rescue=>e
+				info=e.message
+				info = "500" unless info.start_with?("4")
+				if mws
+					mws.allocated_quantity = mws.allocated_quantity - quantity
+					mws.save
 				end
 				if mw_status
 					mw.update_attributes(status: mw_status)
