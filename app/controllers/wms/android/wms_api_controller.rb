@@ -128,7 +128,7 @@ module Wms
 	      merchant = merchantId && Merchant.where(id: merchantId.to_s).first
 	      raise "400" unless merchant
 	      inboundNo = mdibc_params[:inboundNo].presence
-	      mic = Wms::MerInboundCommodity.where(inbound_no: inboundNo.to_s).first
+	      mic = Wms::MerInboundCommodity.where(merchant: merchant, inbound_no: inboundNo.to_s).first
 	      raise "408" unless mic
 	      raise "401" unless ["partial-entered", "non-entered"].include? mic.inbound_status
 	    	unless mdibc_e = Wms::MerDeoptInboundBatchCommodity.where(inbound_no: inboundNo).first
