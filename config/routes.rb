@@ -25,6 +25,8 @@ Wms::Engine.routes.draw do
 
   resources :mer_depot_inbound_batch_commodities, only: [:index, :show]
 
+  resources :mer_inventories, only: [:index]
+
   resources :mer_outbound_orders, only: [:index, :show] do
     post 'choose', on: :collection
     get 'allocate', on: :collection

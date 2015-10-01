@@ -1,0 +1,24 @@
+<% if @mer_inventories.count > 0 %>
+  <table class="table table-bordered">
+    <thead>
+      <tr>
+        <th width="20%">sku no</th>
+        <th width="20%">commodity no</th>
+        <th width="20%">quantity</th>
+        <th width="20%">merchant</th>
+        <th width="20%">commodity owner</th>
+      </tr>
+    </thead>
+    <tbody>
+      <% @mer_inventories.each do |mi| %>
+        <tr>
+          <td><%=mi.sku_no %></td>
+          <td><%=mi.commodity_no %></td>
+          <td><%=mi.quantity %></td>
+          <td><%=mi.merchant.name %></td>
+          <td><%=mi.commodity_owner %></td>
+        </tr>
+      <% end %>
+    </tbody>
+  </table>
+<% end %>
