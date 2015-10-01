@@ -3,7 +3,7 @@ require_dependency "wms/application_controller"
 module Wms
   class DepotsController < ApplicationController
   	before_filter :check_login
-  	layout 'wms/inbound_layout'
+  	layout 'wms/management_layout'
   	def show_depot
   		@depot = current_account.depot
   	end
