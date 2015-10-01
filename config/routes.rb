@@ -25,14 +25,21 @@ Wms::Engine.routes.draw do
 
   resources :mer_depot_inbound_batch_commodities, only: [:index, :show]
 
-  resources :mer_inventories, only: [:index]
+  resources :mer_inventories, only: [:index] do
+    collection do
+      get 'commodity_search'
+      post 'commodity_search'
+    end
+  end
 
   resources :mer_outbound_orders, only: [:index, :show] do
-    post 'choose', on: :collection
-    get 'allocate', on: :collection
-    post 'allocated', on: :collection
-    get 'merge', on: :collection
-    post 'merged', on: :collection
+    collection do
+      post 'choose'
+      get 'allocate'
+      post 'allocated'
+      get 'merge'
+      post 'merged'
+    end
   end
 
   resources :mer_waves, only: [:index] do 

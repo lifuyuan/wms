@@ -1,0 +1,60 @@
+
+<div class="boxed-group dangerzone">
+  <h3>Commodity Search</h3>
+  <div class="boxed-group-inner">
+    <%= form_tag commodity_search_mer_inventories_path do %>
+      <dl class="form", style="display: inline;">
+        <dt style="display: inline;">
+          <%= label_tag "merchant" %>
+        </dt>
+        <dd style="display: inline;">
+          <%=select_tag 'merchant', options_for_select(Merchant.all.map{|a| [a.name, a.id]}), style: "width: 15%;"%>
+        </dd>
+      </dl>
+      <dl class="form", style="display: inline;" >
+        <dt style="display: inline;">
+          <%= label_tag "commodity" %>
+        </dt>
+        <dd style="display: inline;">
+          <%= text_field_tag :commodity, params[:commodity], style: "width: 20%;" %>
+        </dd>
+      </dl>
+      <dl class="form", style="display: inline;" >
+        <dt style="display: inline;">
+          <%= label_tag "sku no" %>
+        </dt>
+        <dd style="display: inline;">
+          <%= text_field_tag :sku, params[:sku], style: "width: 20%;" %>
+        </dd>
+      </dl>
+      <p style="display: inline;"> <%= submit_tag "Search", :class => "button primary" %> </p>
+    <% end %>
+  </div>
+
+  <% if @mer_inventories.count > 0 %>
+  <table class="table table-bordered">
+    <thead>
+      <tr>
+        <th width="20%">sku no</th>
+        <th width="20%">commodity no</th>
+        <th width="10%">quantity</th>
+        <th width="20%">merchant</th>
+        <th width="20%">commodity owner</th>
+        <th width="20%">shelf</th>
+      </tr>
+    </thead>
+    <tbody>
+      <% @mer_inventories.each do |mi| %>
+        <tr>
+          <td><%=mi.sku_no %></td>
+          <td><%=mi.commodity_no %></td>
+          <td><%=mi.quantity %></td>
+          <td><%=mi.merchant.name %></td>
+          <td><%=mi.commodity_owner %></td>
+          <td><%=mi.shelf %></td>
+        </tr>
+      <% end %>
+    </tbody>
+  </table>
+<% end %>
+</div>
