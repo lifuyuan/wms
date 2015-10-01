@@ -1,10 +1,11 @@
 <div class="header header-logged-in">
   <div class="container clearfix">
-    <%= link_to "WMS", root_path, class: "header-logo-wordmark" %>
+    <%= link_to "TIME24", root_path, class: "header-logo-wordmark", style: "font-style: italic;" %>
 
     <ul class="top-nav">
       <li><%= link_to "Inbound", mer_inbound_commodities_path %></li>
       <li><%= link_to "Outbound", mer_waves_path %></li>
+      <li><%= link_to "UserManagement", "#" %></li>
     </ul>
     <ul id="user-links">
       <li><%= link_to current_account.name, '#' %></li>

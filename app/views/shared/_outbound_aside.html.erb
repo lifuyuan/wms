@@ -1,6 +1,9 @@
 <div class="menu-container">
   <ul class="menu">
-    <li><a class="<%= request.path.start_with?('/wms/mer_waves')? "active":"" %>" href="/wms/mer_waves">Sorting Tasks</a></li>
+    <li><a class="<%= request.path.start_with?('/wms/mer_waves')? "active":"" %>" href="/wms/mer_waves">Seeding Tasks</a></li>
+    <li><a href="#">Picking Tasks</a></li>
     <li><a class="<%= request.path.start_with?('/wms/mer_outbound_orders')? "active":"" %>" href="/wms/mer_outbound_orders">Forecast Outbound</a></li>
+    <li><a href="#">Actual Outbound</a></li>
+    <li><a href="#">Work Statistics</a></li>
   </ul>
 </div>
