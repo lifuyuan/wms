@@ -1,0 +1,28 @@
+<% if @mer_inbound_commodity.mer_batch_skus.count > 0%>
+  <table class="table table-bordered">
+    <thead>
+      <tr>
+        <th width="15%">sku no</th>
+        <th width="15%">commodity owner</th>
+        <th width="14%">forecast quantity</th>
+        <th width="14%">actual quantity</th>
+        <th width="15%">dom</th>
+        <th width="15%">deadline</th>
+        <th width="12%">status</th>
+      </tr>
+    </thead>
+    <tbody>
+      <% @mer_inbound_commodity.mer_batch_skus.each do |mbs| %>
+        <tr>
+          <td><%=mbs.sku_no %></td>
+          <td><%=mbs.commodity_no %></td>
+          <td><%=mbs.quantity %></td>
+          <td><%=mbs.quantity %></td>
+          <td><%=mbs.dom.strftime("%Y-%m-%d") if mbs.dom %></td>
+          <td><%=mbs.deadline_of_shelf_life.strftime("%Y-%m-%d") if mbs.deadline_of_shelf_life %></td>
+          <td><%=mbs.status %></td>
+        </tr>
+      <% end %>
+    </tbody>
+  </table>
+<% end %>

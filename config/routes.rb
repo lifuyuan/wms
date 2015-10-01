@@ -19,7 +19,9 @@ Wms::Engine.routes.draw do
   resources :depots, only: [:edit, :update]
   get "depots/show" => "depots#show_depot", :as => "show_depot"
   get "depots/shelf_barcode" => "depots#shelf_barcode", :as => "shelf_barcode"
-  resources :mer_inbound_commodities, only: [:index, :show]
+  resources :mer_inbound_commodities, only: [:index, :show] do
+    get 'status', on: :member
+  end
 
   resources :mer_outbound_orders, only: [:index, :show] do
     post 'choose', on: :collection

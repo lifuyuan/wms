@@ -11,6 +11,13 @@ module Wms
     end
 
     def show
+      @mer_inbound_commodity = Wms::MerInboundCommodity.find(params[:id])
+    end
+
+    def status
+      @mer_inbound_commodity = Wms::MerInboundCommodity.find(params[:id])
+      @mer_inbound_commodity.update_attributes(status: params[:status])
+      redirect_to mer_inbound_commodities_path
     end
   end
 end

@@ -1,9 +1,10 @@
 <div class="menu-container">
   <ul class="menu">
-    <li><a class="<%= request.path == "/wms/mer_inbound_commodities"? "active":"" %>" href="/wms/mer_inbound_commodities">Forecast Inbound</a></li>
-    <li><a class="<%= request.path.start_with?('/wms/depots')? "active":"" %>" href="/wms/depots/show">Depot Configuration</a></li>
+    <li><a class="<%= request.path.start_with?('/wms/mer_inbound_commodities') ? "active":"" %>" href="/wms/mer_inbound_commodities">Forecast Inbound</a></li>
     <li><a href="#">Actual Inbound</a></li>
     <li><a href="#">Inventory</a></li>
+    <li><a href="#">Commodity Search</a></li>
     <li><a href="#">Work Statistics</a></li>
+    <li><a class="<%= request.path.start_with?('/wms/depots')? "active":"" %>" href="/wms/depots/show">Depot Configuration</a></li>
   </ul>
 </div>

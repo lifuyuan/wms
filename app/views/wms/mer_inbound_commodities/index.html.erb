@@ -10,7 +10,8 @@
         <th width="8%">inbound<br/>status</th>
         <th width="12%">merchant</th>
         <th width="10%">commodity<br/>owner</th>
-        <th>memo</th>
+        <th width="8%">memo</th>
+        <th width="16%">Operation</th>
       </tr>
     </thead>
     <tbody>
@@ -25,6 +26,13 @@
           <td><%=mic.merchant.name%></td>
           <td><%=mic.commodity_owner%></td>
           <td><%=mic.memo%></td>
+          <td>
+            <% if mic.status=="created" %>
+              <%=link_to "canceled", "mer_inbound_commodities/#{mic.id}/status?status=rejected", class: "button minibutton danger", style: "display: inline;"%>&nbsp;
+              <%=link_to "accepted", "mer_inbound_commodities/#{mic.id}/status?status=accepted", class: "button minibutton primary", style: "display: inline;"%>&nbsp;
+            <% end %>
+            <%=link_to "show skus", mer_inbound_commodity_path(mic), class: "button minibutton primary", style: "display: inline;"%>
+          </td>
         </tr>
       <% end %>
     </tbody>
