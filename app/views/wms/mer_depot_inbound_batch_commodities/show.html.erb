@@ -1,0 +1,32 @@
+<% if @mer_depot_inbound_batch_commodity.mer_depot_inbound_batch_skus.count > 0 %>
+  <table class="table table-bordered">
+    <thead>
+      <tr>
+        <th width="14%">sku no</th>
+        <th width="14%">commodity no</th>
+        <th width="10%">quantity</th>
+        <th width="11%">mounted quantity</th>
+        <th width="11%">inventory quantity</th>
+        <th width="10%">dom</th>
+        <th width="10%">deadline</th>
+        <th width="10%">status</th>
+        <th width="10%">operator</th>
+      </tr>
+    </thead>
+    <tbody>
+      <% @mer_depot_inbound_batch_commodity.mer_depot_inbound_batch_skus.each do |mdibs| %>
+        <tr>
+          <td><%=mdibs.sku_no %></td>
+          <td><%=mdibs.commodity_no %></td>
+          <td><%=mdibs.quantity %></td>
+          <td><%=mdibs.mounted_quantity %></td>
+          <td><%=mdibs.quantity - 2 %></td>
+          <td><%=mdibs.dom.strftime("%Y-%m-%d") if mdibs.dom %></td>
+          <td><%=mdibs.deadline_of_shelf_life.strftime("%Y-%m-%d") if mdibs.deadline_of_shelf_life %></td>
+          <td><%=mdibs.status %></td>
+          <td><%=mdibs.operator %></td>
+        </tr>
+      <% end %>
+    </tbody>
+  </table>
+<% end %>

@@ -23,6 +23,8 @@ Wms::Engine.routes.draw do
     get 'status', on: :member
   end
 
+  resources :mer_depot_inbound_batch_commodities, only: [:index, :show]
+
   resources :mer_outbound_orders, only: [:index, :show] do
     post 'choose', on: :collection
     get 'allocate', on: :collection

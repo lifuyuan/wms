@@ -1,0 +1,24 @@
+<% if @mer_depot_inbound_batch_commodities.count > 0 %>
+  <table class="table table-bordered">
+    <thead>
+      <tr>
+        <th width="20%">inbound<br/>no</th>
+        <th width="20%">inbound<br/>batch no</th>
+        <th width="20%">merchant</th>
+        <th width="20%">commodity<br/>owner</th>
+        <th width="20%">Operation</th>
+      </tr>
+    </thead>
+    <tbody>
+      <% @mer_depot_inbound_batch_commodities.each do |mdibc| %>
+        <tr>
+          <td><%=mdibc.inbound_no%></td>
+          <td><%=mdibc.inbound_batch_no%></td>
+          <td><%=mdibc.merchant.name %></td>
+          <td><%=mdibc.commodity_owner%></td>
+          <td><%=link_to "show skus", mer_depot_inbound_batch_commodity_path(mdibc), class: "button minibutton primary"%></td>
+        </tr>
+      <% end %>
+    </tbody>
+  </table>
+<% end %>
