@@ -10,6 +10,14 @@ module Wms
     	@mer_waves = Wms::MerWave.where(assigned_id: current_account.id).desc(:status)
     end
 
+    def seeding_tasks
+      @mer_waves = Wms::MerWave.where(assigned_id: current_account.id, flag: "seeding").desc(:status)
+    end
+
+    def picking_tasks
+      @mer_waves = Wms::MerWave.where(assigned_id: current_account.id, flag: "picking").desc(:status)
+    end
+
     def sorting_pdf
       mer_waves = Wms::MerWave.find(params[:mw_id])
       output = MerWavePrint.new.batch_mer_wave(mer_waves)

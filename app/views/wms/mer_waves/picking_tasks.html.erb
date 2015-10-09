@@ -1,0 +1,31 @@
+<% if @mer_waves.size > 0 %>
+  <%= form_tag sorting_pdf_mer_waves_path do %>
+    <table class="table table-bordered">
+      <thead>
+        <tr>
+          <th width="12%">Select ALL<%= check_box_tag 'selectFlag', '', false, onclick:'checkAll(this)' %></th>
+          <th width="22%">Order No.</th>
+          <th width="14%">Allocator</th>
+          <th width="16%">Refered Skus Amount</th>
+          <th width="12%">Status</th>
+        </tr>
+      </thead>
+      <tbody>
+        <% @mer_waves.each do |mw| %>
+          <tr>
+            <td><%= check_box_tag 'mw_id[]', mw.id %></td>
+            <td><%=mw.wave_no%></td>
+            <td><%=mw.allocator%></td>
+            <td><%=mw.mer_wave_skus.sum{|m| m.quantity}%></td>
+            <td><%=mw.status%></td>
+          </tr>
+        <% end %>
+        <tr>
+          <td colspan="2"><%= submit_tag "Print Orders Pdf", :class => "button"%></td>
+          <td colspan="3"></td>
+        </tr>
+      </tbody>
+    </table>
+  <% end %>
+
+<% end %>

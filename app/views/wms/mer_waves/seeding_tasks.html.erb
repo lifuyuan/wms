@@ -1,0 +1,39 @@
+<% if @mer_waves.size > 0 %>
+  <%= form_tag sorting_pdf_mer_waves_path do %>
+    <table class="table table-bordered">
+      <thead>
+        <tr>
+          <th width="12%">Select ALL<%= check_box_tag 'selectFlag', '', false, onclick:'checkAll(this)' %></th>
+          <th width="22%">Wave No.</th>
+          <th width="16%">Refered Orders Amount</th>
+          <th width="14%">Allocator</th>
+          <th width="16%">Refered Skus Amount</th>
+          <th width="12%">Status</th>
+          <th width="14%">Print Order's Pdf</th>
+        </tr>
+      </thead>
+      <tbody>
+        <% @mer_waves.each do |mw| %>
+          <tr>
+            <td><%= check_box_tag 'mw_id[]', mw.id %></td>
+            <td><%=mw.wave_no%></td>
+            <td><%=mw.refered_amount%></td>
+            <td><%=mw.allocator%></td>
+            <td><%=mw.mer_wave_skus.sum{|m| m.quantity}%></td>
+            <td><%=mw.status%></td>
+            <td>
+            	<% if mw.wave_no.start_with?('wave')%>
+            		<%=link_to "print", order_pdf_mer_wafe_path(mw)%>
+            	<% end %>
+            </td>
+          </tr>
+        <% end %>
+        <tr>
+          <td colspan="2"><%= submit_tag "Print Seeding Pdf", :class => "button"%></td>
+          <td colspan="5"></td>
+        </tr>
+      </tbody>
+    </table>
+  <% end %>
+
+<% end %>

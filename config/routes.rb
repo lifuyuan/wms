@@ -43,7 +43,11 @@ Wms::Engine.routes.draw do
   end
 
   resources :mer_waves, only: [:index] do 
-    post 'sorting_pdf', on: :collection
+    collection do 
+      post 'sorting_pdf'
+      get 'seeding_tasks'
+      get 'picking_tasks'
+    end
     get 'order_pdf', on: :member
   end
 end

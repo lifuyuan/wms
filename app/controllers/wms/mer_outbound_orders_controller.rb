@@ -50,7 +50,8 @@ module Wms
             allocator_id: current_account.id,
             assigned_name: account.name,
             assigned_id: account.id,
-            status: "in-process")
+            status: "in-process",
+            flag: "picking")
           raise "MerWave save failed!" unless mv.save
           mvs[j] = mv
           j += 1
@@ -98,7 +99,8 @@ module Wms
           allocator_id: current_account.id,
           assigned_name: account.name,
           assigned_id: account.id,
-          status: "in-process")
+          status: "in-process",
+          flag: "seeding")
         raise "MerWave save failed!" unless mv.save
         moos = {}
         wmss = []
